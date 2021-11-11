@@ -309,7 +309,7 @@ private:
         fprintf(stderr, "GLFW Error: %s\n", description);
     }
 
-    static APIENTRY void gl_error_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+    static void APIENTRY gl_error_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
         const GLchar* message, const void* this_ptr)
     {
         fprintf(stderr, "OpenGL Info: %s\n", message);
