@@ -1,3 +1,5 @@
 /.vscode
+/debug
+/release
 /out
 /old
