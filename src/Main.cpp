@@ -9,6 +9,8 @@ constexpr size_t NUM_SHADERS = 3;
 class MyApp : public GLFWApplication {
 
 public:
+    MyApp() { m_name = "Mandelbrot"; }
+
     void run() override
     {
         offset = -screen_to_world(window_size() / 2);
@@ -48,18 +50,24 @@ public:
         shader3.bind();
         shader3.set_uniform<int>("u_max_it", max_iterations);
 
+        redraw();
+
         while (!glfwWindowShouldClose(m_window)) {
-            current_shader()->bind();
-            current_shader()->set_uniform("u_one_over_scale", 1.0 / scale);
-            current_shader()->set_uniform("u_offset", offset);
-
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
-            glfwSwapBuffers(m_window);
             glfwPollEvents();
         }
+    }
+
+    void redraw()
+    {
+        current_shader()->bind();
+        current_shader()->set_uniform("u_one_over_scale", 1.0 / scale);
+        current_shader()->set_uniform("u_offset", offset);
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glfwSwapBuffers(m_window);
     }
 
     void mouse_event(MouseEvent event) override
@@ -77,6 +85,7 @@ public:
         if (dragging) {
             offset -= (pos - drag_pos) / scale;
             drag_pos = pos;
+            redraw();
         }
     }
 
@@ -85,15 +94,19 @@ public:
         if (event.action == KeyAction::Press) {
             if (event.key == Key::KeyRight) {
                 shader_idx = (shader_idx + 1) % NUM_SHADERS;
+                redraw();
             } else if (event.key == Key::KeyLeft) {
                 shader_idx = (shader_idx - 1) % NUM_SHADERS;
+                redraw();
             } else if (event.key == Key::KeyUp) {
                 max_iterations += 500;
                 current_shader()->set_uniform("u_max_it", max_iterations);
+                redraw();
                 printf("max_iterations: %d\n", max_iterations);
             } else if (event.key == Key::KeyDown) {
                 max_iterations -= 500;
                 current_shader()->set_uniform("u_max_it", max_iterations);
+                redraw();
                 printf("max_iterations: %d\n", max_iterations);
             }
         } else if (event.action == KeyAction::Repeat) {
@@ -101,7 +114,7 @@ public:
                 zoom(0.9);
             } else if (event.key == Key::KeyQ) {
                 zoom(1.1);
-            } 
+            }
         } else if (event.action == KeyAction::Release) {
         }
     }
@@ -115,11 +128,20 @@ public:
 
         dvec2 post_mouse = screen_to_world(mouse);
         offset += pre_mouse - post_mouse;
+
+        redraw();
     }
 
-    void scroll_event(dvec2 off) override { zoom(off.y < 0.0 ? 0.9 : 1.1); }
+    void scroll_event(dvec2 off) override
+    {
+        zoom(off.y < 0.0 ? 0.9 : 1.1);
+    }
 
-    void resize_event(ivec2 size) override { glViewport(0, 0, size.x, size.y); }
+    void resize_event(ivec2 size) override
+    {
+        glViewport(0, 0, size.x, size.y);
+        redraw();
+    }
 
     Shader load_shader(std::string folder_path)
     {
