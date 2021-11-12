@@ -287,6 +287,7 @@ public:
         assert(
             shader_type == GL_VERTEX_SHADER || shader_type == GL_GEOMETRY_SHADER || shader_type == GL_FRAGMENT_SHADER);
 
+        #pragma warning(suppress : 4996)
         auto* file = fopen(path.c_str(), "r");
 
         if (!file) {
@@ -306,10 +307,12 @@ public:
 
         fclose(file);
 
+        #ifndef _WIN32
         if (num_read != length) {
             perror(path.c_str());
             return false;
         }
+        #endif
 
         uint32_t shader_id = glCreateShader(shader_type);
         m_shader_ids[shader_type] = shader_id;
